@@ -47,18 +47,18 @@ elif args.model == 'DINO_IA3':
     backbone = torch.hub.load('facebookresearch/dino:main', 'dino_vits16', pretrained=False)
     input_dim = backbone.embed_dim
     model = dino.DINO_IA3(backbone, input_dim, lora_rank=8, lora_alpha=1.0, epochs=args.epochs)
-elif args.model == 'DINO_SparseUpdate':
-    model_path = os.path.join(save_dir, "DINO_SparseUpdate.pth")
-    transform = transforms.DINOTransform()
-    backbone = torch.hub.load('facebookresearch/dino:main', 'dino_vits16', pretrained=False)
-    input_dim = backbone.embed_dim
-    model = dino.DINO_SparseUpdate(backbone, input_dim, lora_rank=8, lora_alpha=1.0, epochs=args.epochs)
-elif args.model == 'DINO_SparseLoRA':
-    model_path = os.path.join(save_dir, "DINO_SparseLoRA.pth")
-    transform = transforms.DINOTransform()
-    backbone = torch.hub.load('facebookresearch/dino:main', 'dino_vits16', pretrained=False)
-    input_dim = backbone.embed_dim
-    model = dino.DINO_SparseLoRA(backbone, input_dim, lora_rank=8, lora_alpha=1.0, epochs=args.epochs)
+# elif args.model == 'DINO_SparseUpdate':
+#     model_path = os.path.join(save_dir, "DINO_SparseUpdate.pth")
+#     transform = transforms.DINOTransform()
+#     backbone = torch.hub.load('facebookresearch/dino:main', 'dino_vits16', pretrained=False)
+#     input_dim = backbone.embed_dim
+#     model = dino.DINO_SparseUpdate(backbone, input_dim, lora_rank=8, lora_alpha=1.0, epochs=args.epochs)
+# elif args.model == 'DINO_SparseLoRA':
+#     model_path = os.path.join(save_dir, "DINO_SparseLoRA.pth")
+#     transform = transforms.DINOTransform()
+#     backbone = torch.hub.load('facebookresearch/dino:main', 'dino_vits16', pretrained=False)
+#     input_dim = backbone.embed_dim
+#     model = dino.DINO_SparseLoRA(backbone, input_dim, lora_rank=8, lora_alpha=1.0, epochs=args.epochs)
 elif args.model == 'DINO_SparseLoRA_Tensor':
     model_path = os.path.join(save_dir, "DINO_SparseLoRA_Tensor.pth")
     transform = transforms.DINOTransform()
@@ -100,17 +100,17 @@ profiler = PyTorchProfiler(
     emit_nvtx=True,
     record_functions=True,
 )
-if os.path.exists(model_path):
-    model = model.load_state_dict(torch.load(model_path))
-    print(f"Model loaded from {model_path}")
-else:
-    trainer = Trainer(max_epochs=args.epochs, devices=1, accelerator="gpu", profiler=profiler)
-    st = time.perf_counter_ns()
-    trainer.fit(model, dataloader)
-    end = time.perf_counter_ns()
-    print(f"===--- Training Time: {(end - st) / 1e9:.2f}s ---===")
-    torch.save(model.state_dict(), model_path)
-    print(f"Model saved to {model_path}")
+# if os.path.exists(model_path):
+#     model = model.load_state_dict(torch.load(model_path))
+#     print(f"Model loaded from {model_path}")
+# else:
+trainer = Trainer(max_epochs=args.epochs, devices=1, accelerator="gpu", profiler=profiler)
+st = time.perf_counter_ns()
+trainer.fit(model, dataloader)
+end = time.perf_counter_ns()
+print(f"===--- Training Time: {(end - st) / 1e9:.2f}s ---===")
+    # torch.save(model.state_dict(), model_path)
+    # print(f"Model saved to {model_path}")
 
 #===--- Downstream Task ---===#
 
@@ -142,7 +142,7 @@ if args.model == 'SimCLR':
 else:
     classifier_model = classifier.DINO_Classifier(model)
 
-trainer = Trainer(max_epochs=100, devices=1, accelerator="gpu")
+trainer = Trainer(max_epochs=50, devices=1, accelerator="gpu")
 trainer.fit(classifier_model, train_dataloader)
 
 from tqdm import tqdm
